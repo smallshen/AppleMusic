@@ -1,0 +1,66 @@
+{
+    "$schema": "../node_modules/@tauri-apps/cli/schema.json",
+    "build": {
+        "beforeBuildCommand": "yarn run build",
+        "beforeDevCommand": "yarn run dev",
+        "devPath": "http://localhost:9000",
+        "distDir": "../build",
+        "withGlobalTauri": false
+    },
+    "package": {
+        "productName": "AppleMusic",
+        "version": "1.0.0"
+    },
+    "tauri": {
+        "allowlist": {
+            "all": false,
+            "http": {
+                "all": true,
+                "request": false,
+                "scope": ["https://musi.sh/browse", "https://musi.sh/app.*.js"]
+            }
+        },
+        "bundle": {
+            "active": true,
+            "category": "Music",
+            "copyright": "",
+            "deb": {
+                "depends": []
+            },
+            "externalBin": [],
+            "icon": ["icons/favicon-16.png", "icons/favicon-32.png", "icons/favicon-180.png", "icons/icon.ico"],
+            "identifier": "com.apple",
+            "longDescription": "",
+            "macOS": {
+                "entitlements": null,
+                "exceptionDomain": "",
+                "frameworks": [],
+                "providerShortName": null,
+                "signingIdentity": null
+            },
+            "resources": [],
+            "shortDescription": "",
+            "targets": "all",
+            "windows": {
+                "certificateThumbprint": null,
+                "digestAlgorithm": "sha256",
+                "timestampUrl": ""
+            }
+        },
+        "security": {
+            "csp": null
+        },
+        "updater": {
+            "active": false
+        },
+        "windows": [
+            {
+                "fullscreen": false,
+                "height": 600,
+                "resizable": true,
+                "title": "Apple Music",
+                "width": 800
+            }
+        ]
+    }
+}

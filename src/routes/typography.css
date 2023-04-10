@@ -1,0 +1,166 @@
+.bold {
+    font-weight: 700;
+}
+
+.h1 {
+    font-size: 1.25rem;
+}
+
+.headline1 {
+    font-size: 72px;
+    font-family: var(--font-medium);
+}
+
+.headline2 {
+    font-size: 68px;
+    font-family: var(--font-medium);
+}
+
+.headline3 {
+    font-size: 50px;
+    font-family: var(--font-medium);
+}
+
+.headline4 {
+    font-size: 48px;
+    line-height: 60px;
+    font-family: var(--font-medium);
+}
+
+.headline5 {
+    font-size: 42px;
+    letter-spacing: 0.5px;
+    font-family: var(--font-medium);
+}
+
+.headline6 {
+    font-size: 36px;
+    font-family: var(--font-medium);
+}
+
+.subtitle1 {
+    font-size: 32px;
+}
+
+.subtitle2 {
+    font-size: 24px;
+}
+
+.subtitle2 a {
+    color: var(--blue9);
+    text-decoration: underline;
+}
+
+.subtitle3_1 {
+    font-size: 24px;
+}
+
+.subtitle3 {
+    font-size: 20px;
+}
+
+.body1 {
+    font-size: 18px;
+}
+
+.body2_1 {
+    font-size: 16px;
+}
+
+.body2 {
+    font-size: 16px;
+}
+
+.body3_1 {
+    font-size: 14px;
+}
+
+.body3 {
+    font-size: 12px;
+}
+
+.description1 {
+    font-size: 10px;
+}
+
+@media screen and (max-width: 1024px) {
+    .headline1 {
+        font-size: 60px;
+    }
+
+    .headline2 {
+        font-size: 48px;
+    }
+
+    .headline3 {
+        font-size: 40px;
+        letter-spacing: 0.5px;
+    }
+
+    .headline4 {
+        font-size: 36px;
+        letter-spacing: 0.5px;
+    }
+
+    .headline5 {
+        font-size: 30px;
+    }
+
+    .headline6 {
+        font-size: 28px;
+    }
+
+    .subtitle1 {
+        font-size: 24px;
+    }
+
+    .subtitle2 {
+        font-size: 20px;
+    }
+
+    .subtitle3_1 {
+        font-size: 18px;
+    }
+
+    .subtitle3 {
+        font-size: 16px;
+    }
+
+    .body1 {
+        font-size: 16px;
+    }
+
+    .body2 {
+        font-size: 14px;
+    }
+
+    .body3_1 {
+        font-size: 12px;
+    }
+}
+
+.headline1,
+.headline2,
+.headline3,
+.headline4,
+.headline5,
+.headline6,
+.subtitle1,
+.subtitle2,
+.subtitle3_1,
+.subtitle3,
+.body1,
+.body2_1,
+.body2,
+.body3_1,
+.body3,
+.description1 {
+    line-height: 1.5;
+}
+
+.headline1,
+.headline2,
+.headline3,
+.headline4 {
+    letter-spacing: unset;
+}
