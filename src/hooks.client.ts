@@ -1,6 +1,5 @@
 import getDeveloperToken from "$lib/getDeveloperToken"
 
-
 console.log(MusicKit)
 
 const music = await MusicKit.configure({

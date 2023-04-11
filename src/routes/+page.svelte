@@ -40,7 +40,7 @@
     section {
         width: 100%;
         display: grid;
-        grid-template-columns: repeat(auto-fill,clamp(10rem, 15vw, 20rem));
+        grid-template-columns: repeat(auto-fill, clamp(8.5rem, 15vw, 20rem));
         grid-gap: 1rem;
 
         justify-content: space-between;

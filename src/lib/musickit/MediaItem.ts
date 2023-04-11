@@ -1,4 +1,3 @@
-
 export interface MediaItem<T> {
     id: string
     type: string

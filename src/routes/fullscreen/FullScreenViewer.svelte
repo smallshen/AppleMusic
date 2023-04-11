@@ -1,6 +1,9 @@
+<svelte:options immutable={true} />
+
 <script lang="ts">
     import PlayPauseButton from "$lib/components/controls/PlayPauseButton.svelte"
-    import type { Songs } from "$lib/musickit"
+    import type { PlayParameters, Songs } from "$lib/musickit"
+    import { AMPMusicKit } from "$lib/musickit/AMPMusicKit"
 
     export let openFullScreen: boolean
     export let song: Songs
@@ -19,7 +22,24 @@
     $: songName = song.attributes!.name
     $: author = song.attributes!.artistName
 
-    $: console.log(song.attributes!.artwork)
+    type Catlog = {
+        id: string
+        type: "lyrics"
+        attributes: {
+            playParams: PlayParameters
+            ttml: string
+        }
+    }
+
+    $: {
+        if (song.attributes!.hasLyrics) {
+            AMPMusicKit.music(`/v1/catalog/{{storefrontId}}/songs/${song.id}/lyrics`).then((res) => {
+                const { data } = res.data as {
+                    data: Catlog[]
+                }
+            })
+        }
+    }
 </script>
 
 <svelte:window on:keydown={handleWindowKeyDown} />
@@ -51,6 +71,16 @@
 </main>
 
 <style>
+    .title {
+        overflow: scroll;
+        /* oneline */
+        white-space: nowrap;
+    }
+
+    .info {
+        max-width: 400px;
+    }
+
     main {
         width: 100%;
         height: 100%;
@@ -89,8 +119,8 @@
     }
 
     .img {
-        width: 400px;
-        height: 400px;
+        width: clamp(100px, 25vw, 400px);
+        height: clamp(100px, 25vw, 400px);
 
         border-radius: 12px;
         border: 1px solid var(--grayA7);

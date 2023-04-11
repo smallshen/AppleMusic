@@ -11,10 +11,7 @@
 
     async function onClick() {
         const music = MusicKit.getInstance()
-
         await music.setQueue({ song: song.id, startPlaying: true })
-
-        console.log("play")
     }
 </script>
 
@@ -35,7 +32,7 @@
     }
 
     .card {
-        width: clamp(10rem, 15vw, 20rem);
+        width: clamp(8.5rem, 15vw, 20rem);
     }
 
     img {

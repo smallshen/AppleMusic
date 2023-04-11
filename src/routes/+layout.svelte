@@ -51,23 +51,30 @@
     let currentMusic: Songs | null = null
 
     onMount(() => {
-        const nowPlayingItemDidChange = async (e: { item: MediaItem<unknown> }) => {
-            if (e.item == null) {
+        const callback = async (e: {
+            oldState: MusicKit.PlaybackStates
+            state: MusicKit.PlaybackStates
+            nowPlayingItem: MediaItem<unknown> | undefined
+        }) => {
+            if (e.nowPlayingItem == null) {
                 currentMusic = null
                 return
             }
 
             const queryParameters = { l: "zh-CN" }
 
-            const { data } = await music.api.music(`/v1/catalog/{{storefrontId}}/songs/${e.item.id}`, queryParameters)
+            const { data } = await music.api.music(
+                `/v1/catalog/{{storefrontId}}/songs/${e.nowPlayingItem.id}`,
+                queryParameters
+            )
 
             currentMusic = data.data[0]
         }
 
-        music.addEventListener("nowPlayingItemDidChange", nowPlayingItemDidChange)
+        music.addEventListener("playbackStateDidChange", callback)
 
         return () => {
-            music.removeEventListener("nowPlayingItemDidChange", nowPlayingItemDidChange)
+            music.removeEventListener("playbackStateDidChange", callback)
         }
     })
 
@@ -80,8 +87,6 @@
     }
 
     function slideBottomUp(node: Node, options: any) {
-        console.log(node)
-
         return {
             duration: options.duration,
             css: (t: number) => {

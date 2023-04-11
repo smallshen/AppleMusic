@@ -48,6 +48,8 @@ declare global {
             storefrontId: string
             videoContainerElement?: HTMLVideoElement
 
+            musicUserToken: string
+
             addEventListener(name: string, callback: Function, options?: { once?: boolean }): void
             authorize(): Promise<string | void>
             changeToMediaAtIndex(index: number): Promise<void>

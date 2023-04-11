@@ -17,7 +17,7 @@
             "http": {
                 "all": true,
                 "request": false,
-                "scope": ["https://musi.sh/browse", "https://musi.sh/app.*.js"]
+                "scope": ["https://musi.sh/browse", "https://musi.sh/app.*.js", "https://amp-api.music.apple.com/*"]
             }
         },
         "bundle": {
