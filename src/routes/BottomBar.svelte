@@ -46,10 +46,6 @@
 </section>
 
 <style>
-    :global(:root) {
-        --bottombar-height: 4.2rem;
-    }
-
     .music {
         display: flex;
         align-items: center;
@@ -61,7 +57,7 @@
         height: 50px;
 
         border-radius: 6px;
-        box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        box-shadow: 4px 8px 19px -3px rgba(0, 0, 0, 0.27);
     }
 
     .info {
@@ -80,11 +76,9 @@
     }
 
     .bar {
-        border-top: 1px solid var(--gray8);
-
-        height: calc(var(--bottombar-height) - 1px);
-
+        height: 100%;
         backdrop-filter: blur(20px);
+
         background-color: hsla(0, 0%, 78%, 0.8);
 
         display: flex;
@@ -92,10 +86,7 @@
         flex-direction: row;
         justify-content: space-between;
 
-        width: 100%;
-        box-sizing: border-box;
         padding: 0 3rem;
-
         transition: background-color 0.2s ease-in-out;
     }
 

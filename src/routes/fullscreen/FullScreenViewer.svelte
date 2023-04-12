@@ -2,6 +2,7 @@
 
 <script lang="ts">
     import PlayPauseButton from "$lib/components/controls/PlayPauseButton.svelte"
+    import TTMLLyrics from "$lib/components/lyrics/TTMLLyrics.svelte"
     import type { PlayParameters, Songs } from "$lib/musickit"
     import { AMPMusicKit } from "$lib/musickit/AMPMusicKit"
 
@@ -31,13 +32,27 @@
         }
     }
 
+    type LyricsInfo = {
+        from: "apple" | "qq" | "netease"
+        lyrics: string
+    }
+
+    let lyrics: LyricsInfo | null | undefined = undefined
+
     $: {
         if (song.attributes!.hasLyrics) {
             AMPMusicKit.music(`/v1/catalog/{{storefrontId}}/songs/${song.id}/lyrics`).then((res) => {
                 const { data } = res.data as {
                     data: Catlog[]
                 }
+
+                lyrics = {
+                    from: "apple",
+                    lyrics: data[0].attributes.ttml
+                }
             })
+        } else {
+            lyrics = null
         }
     }
 </script>
@@ -64,8 +79,14 @@
             </section>
         </section>
         <section class="lyrics">
-            <h1 class="subtitle1">Lyrics</h1>
-            <h2 class="body2">Coming soon...</h2>
+            {#if lyrics === null}
+                <h1 class="subtitle1">Lyrics</h1>
+                <h2 class="body2">Coming soon...</h2>
+            {/if}
+
+            {#if lyrics?.from == "apple"}
+                <TTMLLyrics lyrics={lyrics.lyrics} />
+            {/if}
         </section>
     </section>
 </main>
@@ -79,12 +100,16 @@
 
     .info {
         max-width: 400px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
     }
 
     main {
         width: 100%;
         height: 100%;
         overflow: hidden;
+        clip-path: inset(0 0 0 0);
     }
 
     .background {
@@ -124,6 +149,9 @@
 
         border-radius: 12px;
         border: 1px solid var(--grayA7);
+        box-shadow: 4px 8px 19px -3px rgba(0, 0, 0, 0.27);
+
+        align-self: center;
     }
 
     .left {
@@ -145,5 +173,13 @@
 
     .lyrics {
         flex: 1;
+    }
+
+    .player {
+        width: 100%;
+        display: flex;
+        flex-direction: row;
+        justify-content: center;
+        align-items: center;
     }
 </style>

@@ -127,12 +127,16 @@
 </main>
 
 {#if showFullScreen && currentMusic}
-    <div class="fullscreen" transition:slideBottomUp={{ duration: 300 }}>
+    <div class="fullscreen" transition:slideBottomUp={{ duration: 200 }}>
         <FullScreenViewer bind:openFullScreen={showFullScreen} song={currentMusic} />
     </div>
 {/if}
 
 <style>
+    :global(:root) {
+        --bottombar-height: 65px;
+    }
+
     main {
         display: flex;
         flex-direction: row;
@@ -156,10 +160,11 @@
     .fullscreen-toggle {
         all: unset;
         width: 100%;
-        height: 100%;
 
         position: sticky;
         bottom: 0;
-        left: 0;
+        border-top: 1px solid var(--gray8);
+        height: calc(var(--bottombar-height));
+        box-sizing: border-box;
     }
 </style>
