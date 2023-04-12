@@ -5,6 +5,7 @@
     import TTMLLyrics from "$lib/components/lyrics/TTMLLyrics.svelte"
     import type { PlayParameters, Songs } from "$lib/musickit"
     import { AMPMusicKit } from "$lib/musickit/AMPMusicKit"
+    import { trad2simp } from "$lib/trad2simp"
 
     export let openFullScreen: boolean
     export let song: Songs
@@ -48,7 +49,7 @@
 
                 lyrics = {
                     from: "apple",
-                    lyrics: data[0].attributes.ttml
+                    lyrics: trad2simp(data[0].attributes.ttml)
                 }
             })
         } else {
@@ -127,6 +128,7 @@
         height: 100%;
 
         backdrop-filter: blur(100px);
+        background-color: rgba(0, 0, 0, 0.5);
     }
 
     .content {

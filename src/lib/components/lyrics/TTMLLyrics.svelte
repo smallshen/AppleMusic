@@ -15,6 +15,12 @@
         return s
     }
 
+    // 1:21.822
+    function hmsToMilliseconds(str: string): number {
+        const [seconds, milliseconds] = str.split(".")
+        return hmsToSecondsOnly(seconds) * 1000 + parseInt(milliseconds, 10)
+    }
+
     type TT = {
         attributes: any
         body: {
@@ -41,38 +47,80 @@
         attributesGroupName: "attributes",
         attributeNamePrefix: "",
         textNodeName: "text"
-    }).parse(lyrics)
+    }).parse(lyrics).tt as TT
 
     $: console.log(ttml)
 
+    $: totalMilliseconds = hmsToMilliseconds(ttml.body.attributes.dur)
+    $: console.log(totalMilliseconds)
+
+    const music = MusicKit.getInstance()
+
+    let currentLine: HTMLElement | null = fineCurrentLine()
+
+    function fineCurrentLine() {
+        const currentTime = Math.ceil(music.currentPlaybackProgress * totalMilliseconds)
+
+        // reverse order from current time until 0
+        for (let i = currentTime; i >= 0; i--) {
+            const elm = document.getElementById(`lyrics_line_${i}`)
+            if (elm != null) {
+                return elm
+            }
+        }
+        return null
+    }
+
+    $: {
+        if (currentLine) {
+            currentLine.scrollIntoView({
+                behavior: "smooth",
+                block: "center",
+                inline: "center"
+            })
+            currentLine.classList.add("lyrics_line_current")
+        }
+    }
+
     onMount(() => {
+        currentLine = fineCurrentLine()
+        console.log(currentLine)
+
         const music = MusicKit.getInstance()
 
         const porgressCallback = (event: any) => {
-            // console.log(event)
-            // console.log(music.currentPlaybackTime);
+            // const { currentPlaybackTime } = event
+            const elm = fineCurrentLine()
+
+            if (elm == null) {
+                return
+            }
+
+            if (currentLine != elm) {
+                currentLine?.classList.remove("lyrics_line_current")
+                currentLine = elm
+            }
         }
 
-        music.addEventListener("playbackProgressDidChange", porgressCallback)
+        music.addEventListener("playbackTimeDidChange", porgressCallback)
 
         return () => {
-            music.removeEventListener("playbackProgressDidChange", porgressCallback)
+            music.removeEventListener("playbackTimeDidChange", porgressCallback)
         }
     })
-
-    $: info = ttml.tt as TT
 </script>
 
 <div class="box">
     <ul class="all">
         <div class="padding" />
-        {#each info.body.div as div}
-            <li>
-                <ul>
+        {#each ttml.body.div as div}
+            <li class="verse">
+                <ul class="lyrics-line">
                     {#each div.p as p}
                         <li>
                             <LyricsLine
-                                duration={hmsToSecondsOnly(p.attributes.end) - hmsToSecondsOnly(p.attributes.begin)}
+                                id="lyrics_line_{hmsToMilliseconds(p.attributes.begin)}"
+                                duration={hmsToMilliseconds(p.attributes.end) - hmsToMilliseconds(p.attributes.begin)}
                                 text={p.text}
                             />
                         </li>
@@ -95,11 +143,21 @@
         width: 1px;
     }
 
+    .verse:not(:last-child) {
+        margin-bottom: 20px;
+    }
+
+    .lyrics-line:not(:last-child) {
+        margin-bottom: 10px;
+    }
+
     .all {
         height: max-content;
         display: flex;
         flex-direction: column;
         color: var(--gray11);
+        padding-left: 10px;
+        margin-right: 45px;
     }
 
     .box {
