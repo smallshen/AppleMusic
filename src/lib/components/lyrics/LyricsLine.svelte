@@ -15,10 +15,17 @@
         filter: blur(3px);
 
         transition: filter 0.5s, color 0.5s;
+
+        will-change: filter, color;
     }
 
     :global(.lyrics_line_current) {
         filter: blur(0px) !important;
         color: var(--gray12) !important;
+    }
+
+    :global(.scroll-override) div {
+        filter: blur(0px) !important;
+        transition: filter 0.2s, color 0.2s !important;
     }
 </style>

@@ -49,10 +49,7 @@
         textNodeName: "text"
     }).parse(lyrics).tt as TT
 
-    $: console.log(ttml)
-
     $: totalMilliseconds = hmsToMilliseconds(ttml.body.attributes.dur)
-    $: console.log(totalMilliseconds)
 
     const music = MusicKit.getInstance()
 
@@ -84,12 +81,10 @@
 
     onMount(() => {
         currentLine = fineCurrentLine()
-        console.log(currentLine)
 
         const music = MusicKit.getInstance()
 
         const porgressCallback = (event: any) => {
-            // const { currentPlaybackTime } = event
             const elm = fineCurrentLine()
 
             if (elm == null) {
@@ -108,16 +103,56 @@
             music.removeEventListener("playbackTimeDidChange", porgressCallback)
         }
     })
+
+    let lyricsDom: HTMLDivElement
+
+    let userScrolling = false
+
+    let timeoutId: number | null = null
+
+    function resetScroll() {
+        userScrolling = false
+    }
+
+    $: {
+        console.log(userScrolling)
+        if (!userScrolling) {
+            currentLine = fineCurrentLine()
+            if (currentLine) {
+                currentLine.scrollIntoView({
+                    behavior: "smooth",
+                    block: "center",
+                    inline: "center"
+                })
+            }
+        }
+    }
+
+    onMount(() => {
+        const onWheel = (event: WheelEvent) => {
+            userScrolling = true
+            if (timeoutId != null) {
+                clearTimeout(timeoutId)
+            }
+            timeoutId = setTimeout(resetScroll, 3500)
+        }
+
+        lyricsDom.addEventListener("wheel", onWheel)
+
+        return () => {
+            lyricsDom.removeEventListener("wheel", onWheel)
+        }
+    })
 </script>
 
-<div class="box">
+<div bind:this={lyricsDom} class="box {userScrolling ? 'scroll-override' : ''}">
     <ul class="all">
         <div class="padding" />
         {#each ttml.body.div as div}
             <li class="verse">
-                <ul class="lyrics-line">
+                <ul>
                     {#each div.p as p}
-                        <li>
+                        <li class="lyrics-line">
                             <LyricsLine
                                 id="lyrics_line_{hmsToMilliseconds(p.attributes.begin)}"
                                 duration={hmsToMilliseconds(p.attributes.end) - hmsToMilliseconds(p.attributes.begin)}
@@ -148,7 +183,8 @@
     }
 
     .lyrics-line:not(:last-child) {
-        margin-bottom: 10px;
+        display: block;
+        padding-bottom: 10px;
     }
 
     .all {
