@@ -1,7 +1,6 @@
 import type { PageLoad } from "./$types"
 
-export const load = (async ({ parent }) => {
-    await parent()
+export const load = (async ({}) => {
     const music = MusicKit.getInstance()
     const queryParameters = { l: "zh-CN" }
 

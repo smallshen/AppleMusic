@@ -6,6 +6,7 @@
     import type { PlayParameters, Songs } from "$lib/musickit"
     import { AMPMusicKit } from "$lib/musickit/AMPMusicKit"
     import { trad2simp } from "$lib/trad2simp"
+    import { onMount } from "svelte"
 
     export let openFullScreen: boolean
     export let song: Songs
@@ -56,11 +57,27 @@
             lyrics = null
         }
     }
+
+    let paused = MusicKit.getInstance().playbackState !== MusicKit.PlaybackStates.playing
+
+    onMount(() => {
+        const music = MusicKit.getInstance()
+        const callback = (e: { oldState: MusicKit.PlaybackStates; state: MusicKit.PlaybackStates }) => {
+            const { state } = e
+            paused = state !== MusicKit.PlaybackStates.playing
+        }
+
+        music.addEventListener("playbackStateDidChange", callback)
+
+        return () => {
+            music.removeEventListener("playbackStateDidChange", callback)
+        }
+    })
 </script>
 
 <svelte:window on:keydown={handleWindowKeyDown} />
 
-<main>
+<main class={paused ? "paused" : ""}>
     <!-- <canvas id="gradient" class="background" /> -->
     <img src={artworkUrl} alt={songName} class="background" />
     <div class="blur" />
@@ -68,7 +85,9 @@
     <section class="content">
         <section class="left">
             <section class="info">
-                <img src={artworkUrl} alt={songName} class="img" />
+                <div class="img-box">
+                    <img src={artworkUrl} alt={songName} class="img" />
+                </div>
                 <section class="info-detail">
                     <h1 class="subtitle1 title">{songName}</h1>
                     <h2 class="subtitle3 cap">{author}</h2>
@@ -104,6 +123,7 @@
         display: flex;
         flex-direction: column;
         justify-content: center;
+        gap: 1rem;
     }
 
     main {
@@ -145,15 +165,30 @@
         align-items: center;
     }
 
-    .img {
+    .img-box {
         width: clamp(100px, 25vw, 400px);
         height: clamp(100px, 25vw, 400px);
+
+        display: grid;
+        place-items: center;
+    }
+
+    .img {
+        width: 100%;
+        height: 100%;
 
         border-radius: 12px;
         border: 1px solid var(--grayA7);
         box-shadow: 4px 8px 19px -3px rgba(0, 0, 0, 0.27);
 
         align-self: center;
+
+        transform: scale(1);
+        transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .paused .img {
+        transform: scale(0.8);
     }
 
     .left {

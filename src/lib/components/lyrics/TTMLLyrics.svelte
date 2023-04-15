@@ -30,6 +30,7 @@
                 p: {
                     attributes: { begin: string; end: string }
                     text: string
+                    dom: HTMLElement
                 }[]
             }[]
         }
@@ -53,20 +54,7 @@
 
     const music = MusicKit.getInstance()
 
-    let currentLine: HTMLElement | null = fineCurrentLine()
-
-    function fineCurrentLine() {
-        const currentTime = Math.ceil(music.currentPlaybackProgress * totalMilliseconds)
-
-        // reverse order from current time until 0
-        for (let i = currentTime; i >= 0; i--) {
-            const elm = document.getElementById(`lyrics_line_${i}`)
-            if (elm != null) {
-                return elm
-            }
-        }
-        return null
-    }
+    let currentLine: HTMLElement | null
 
     $: {
         if (currentLine) {
@@ -80,20 +68,15 @@
     }
 
     onMount(() => {
-        currentLine = fineCurrentLine()
-
         const music = MusicKit.getInstance()
 
         const porgressCallback = (event: any) => {
-            const elm = fineCurrentLine()
+            const newLine = findLine(music.currentPlaybackProgress)
 
-            if (elm == null) {
-                return
-            }
-
-            if (currentLine != elm) {
+            if (newLine && newLine != currentLine) {
                 currentLine?.classList.remove("lyrics_line_current")
-                currentLine = elm
+
+                currentLine = newLine
             }
         }
 
@@ -114,10 +97,29 @@
         userScrolling = false
     }
 
+    function roundToThree(num: number) {
+        return Math.round(num * 1000) / 1000
+    }
+
+    // progress in 0 to 1
+    function findLine(progress: number) {
+        for (const div of ttml.body.div) {
+            for (const p of div.p) {
+                const beginProgress = roundToThree(hmsToMilliseconds(p.attributes.begin) / totalMilliseconds)
+                const endProgress = roundToThree(hmsToMilliseconds(p.attributes.end) / totalMilliseconds)
+
+                if (progress >= beginProgress && progress <= endProgress) {
+                    return p.dom
+                }
+            }
+        }
+
+        return null
+    }
+
     $: {
-        console.log(userScrolling)
         if (!userScrolling) {
-            currentLine = fineCurrentLine()
+            currentLine = findLine(music.currentPlaybackProgress)
             if (currentLine) {
                 currentLine.scrollIntoView({
                     behavior: "smooth",
@@ -129,6 +131,14 @@
     }
 
     onMount(() => {
+        currentLine = findLine(music.currentPlaybackProgress)
+        if (currentLine) {
+            currentLine.scrollIntoView({
+                block: "center",
+                inline: "center"
+            })
+        }
+
         const onWheel = (event: WheelEvent) => {
             userScrolling = true
             if (timeoutId != null) {
@@ -152,9 +162,8 @@
             <li class="verse">
                 <ul>
                     {#each div.p as p}
-                        <li class="lyrics-line">
+                        <li bind:this={p.dom} class="lyrics-line">
                             <LyricsLine
-                                id="lyrics_line_{hmsToMilliseconds(p.attributes.begin)}"
                                 duration={hmsToMilliseconds(p.attributes.end) - hmsToMilliseconds(p.attributes.begin)}
                                 text={p.text}
                             />
@@ -179,12 +188,12 @@
     }
 
     .verse:not(:last-child) {
-        margin-bottom: 20px;
+        margin-bottom: 40px;
     }
 
     .lyrics-line:not(:last-child) {
         display: block;
-        padding-bottom: 10px;
+        padding-bottom: 20px;
     }
 
     .all {

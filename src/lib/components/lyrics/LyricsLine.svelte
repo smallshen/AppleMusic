@@ -1,12 +1,11 @@
 <script lang="ts">
     export let duration: number
     export let text: string
-    export let id: string
 
     let dom: HTMLElement
 </script>
 
-<div bind:this={dom} {id}>
+<div bind:this={dom}>
     <h1 class="subtitle1 line">{text}</h1>
 </div>
 
@@ -19,9 +18,9 @@
         will-change: filter, color;
     }
 
-    :global(.lyrics_line_current) {
-        filter: blur(0px) !important;
-        color: var(--gray12) !important;
+    :global(.lyrics_line_current) div {
+        filter: blur(0px);
+        color: var(--gray12);
     }
 
     :global(.scroll-override) div {

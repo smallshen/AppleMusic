@@ -51,30 +51,28 @@
     let currentMusic: Songs | null = null
 
     onMount(() => {
-        const callback = async (e: {
-            oldState: MusicKit.PlaybackStates
-            state: MusicKit.PlaybackStates
-            nowPlayingItem: MediaItem<unknown> | undefined
-        }) => {
-            if (e.nowPlayingItem == null) {
+        const callback = async (e: { item: MediaItem<unknown> | undefined }) => {
+            if (e.item == null) {
                 currentMusic = null
                 return
             }
 
+            console.log(e)
+
             const queryParameters = { l: "zh-CN" }
 
             const { data } = await music.api.music(
-                `/v1/catalog/{{storefrontId}}/songs/${e.nowPlayingItem.id}`,
+                `/v1/catalog/{{storefrontId}}/songs/${e.item._songId}`,
                 queryParameters
             )
 
             currentMusic = data.data[0]
         }
 
-        music.addEventListener("playbackStateDidChange", callback)
+        music.addEventListener("nowPlayingItemDidChange", callback)
 
         return () => {
-            music.removeEventListener("playbackStateDidChange", callback)
+            music.removeEventListener("nowPlayingItemDidChange", callback)
         }
     })
 
@@ -119,7 +117,10 @@
 <main>
     <LeftNav />
     <section>
-        <slot />
+        <div class="content">
+            <slot />
+            <span class="spacer" />
+        </div>
         <button class="fullscreen-toggle" on:click={toggleFullScreen}>
             <BottomBar songs={currentMusic} />
         </button>
@@ -142,9 +143,19 @@
         flex-direction: row;
     }
 
+    .content {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .spacer {
+        width: 100%;
+        height: var(--bottombar-height);
+    }
+
     section {
         height: 100%;
-        width: 100%;
+        flex: 1;
     }
 
     .fullscreen {
@@ -159,9 +170,9 @@
 
     .fullscreen-toggle {
         all: unset;
-        width: 100%;
+        width: calc(100vw - var(--left-nav-width));
 
-        position: sticky;
+        position: fixed;
         bottom: 0;
         border-top: 1px solid var(--gray8);
         height: calc(var(--bottombar-height));
