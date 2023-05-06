@@ -19,14 +19,15 @@
 <script lang="ts">
     import type { MediaItem, Songs } from "$lib/musickit"
     import { onMount } from "svelte"
+    import { cubicInOut } from "svelte/easing"
     import BottomBar from "./BottomBar.svelte"
     import LeftNav from "./LeftNav.svelte"
     import ToastWrapper from "./ToastWrapper.svelte"
     import "./baseLine.css"
     import "./baseStyle.css"
     import FullScreenViewer from "./fullscreen/FullScreenViewer.svelte"
+    import { extractColor } from "./fullscreen/extractColor"
     import "./typography.css"
-    import { cubicInOut } from "svelte/easing"
 
     const music = MusicKit.getInstance()
 
@@ -66,7 +67,14 @@
                 queryParameters
             )
 
-            currentMusic = data.data[0]
+            const song = data.data[0]
+
+            const url = song.attributes!.artwork.url.replace("{w}", "450").replace("{h}", "450")
+
+            const rgbs = await extractColor(450, 450, url)
+            song.__rgbs = rgbs
+
+            currentMusic = song
         }
 
         music.addEventListener("nowPlayingItemDidChange", callback)

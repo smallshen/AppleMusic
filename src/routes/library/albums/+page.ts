@@ -80,7 +80,7 @@ export const load = (async ({ depends }) => {
         "include[library-albums]": "artists",
         l: "zh-CN",
         limit: "100",
-        offset: "0"
+        offset: "50"
     })
 
     depends("library-albums")

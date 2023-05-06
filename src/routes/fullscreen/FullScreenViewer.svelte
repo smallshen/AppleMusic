@@ -6,7 +6,9 @@
     import type { PlayParameters, Songs } from "$lib/musickit"
     import { AMPMusicKit } from "$lib/musickit/AMPMusicKit"
     import { trad2simp } from "$lib/trad2simp"
-    import { onMount } from "svelte"
+    import { onDestroy, onMount } from "svelte"
+    import { Gradient } from "./fluid/Gradient"
+    import type { RGB } from "./extractColor"
 
     export let openFullScreen: boolean
     export let song: Songs
@@ -58,13 +60,17 @@
         }
     }
 
-    let paused = MusicKit.getInstance().playbackState !== MusicKit.PlaybackStates.playing
+    const music = MusicKit.getInstance()
+
+    let paused = music.playbackState !== MusicKit.PlaybackStates.playing
+    let animationPause = false
 
     onMount(() => {
         const music = MusicKit.getInstance()
         const callback = (e: { oldState: MusicKit.PlaybackStates; state: MusicKit.PlaybackStates }) => {
             const { state } = e
             paused = state !== MusicKit.PlaybackStates.playing
+            animationPause = state === MusicKit.PlaybackStates.paused
         }
 
         music.addEventListener("playbackStateDidChange", callback)
@@ -73,20 +79,97 @@
             music.removeEventListener("playbackStateDidChange", callback)
         }
     })
+
+    onMount(() => {
+        const timeout = setTimeout(() => {
+            animationPause = music.playbackState === MusicKit.PlaybackStates.paused
+        }, 300)
+
+        return () => {
+            clearTimeout(timeout)
+        }
+    })
+
+    $: rgbs = orderByLuminance(song.__rgbs)
+    $: console.log(rgbs)
+
+    $: fixedColors = [rgbs[0], rgbs[3], rgbs[10], rgbs[14]]
+
+    $: colors = fixedColors.map((rgb) => rgbToHex(rgb))
+
+    let canvas: HTMLCanvasElement
+
+    let gradient: Gradient
+
+    function rgbToHex(pixel: RGB) {
+        const componentToHex = (c: number) => {
+            const hex = c.toString(16)
+            return hex.length == 1 ? "0" + hex : hex
+        }
+
+        return ("#" + componentToHex(pixel.r) + componentToHex(pixel.g) + componentToHex(pixel.b)).toUpperCase()
+    }
+
+    function orderByLuminance(rgbValues: RGB[]) {
+        const calculateLuminance = (p) => {
+            return 0.2126 * p.r + 0.7152 * p.g + 0.0722 * p.b
+        }
+
+        return rgbValues.sort((p1, p2) => {
+            return calculateLuminance(p2) - calculateLuminance(p1)
+        })
+    }
+
+    let canvasWidth: number
+    let canvasHeight: number
+
+    $: {
+        if (gradient) {
+            if (animationPause) {
+                gradient.pause()
+            } else {
+                gradient.play()
+            }
+        }
+    }
+
+    $: {
+        if (gradient) {
+            gradient.resize(canvasWidth, canvasHeight)
+        }
+    }
+
+    $: {
+        if (gradient) {
+            gradient.destroy()
+        }
+
+        if (rgbs && canvas) {
+            gradient = new Gradient(canvas, colors)
+        }
+    }
+
+    onDestroy(() => {
+        gradient.destroy()
+    })
 </script>
 
 <svelte:window on:keydown={handleWindowKeyDown} />
 
 <main class={paused ? "paused" : ""}>
     <!-- <canvas id="gradient" class="background" /> -->
-    <img src={artworkUrl} alt={songName} class="background" />
-    <div class="blur" />
+    <!-- <img src={artworkUrl} alt={songName} class="background" /> -->
+    <div bind:clientWidth={canvasWidth} bind:clientHeight={canvasHeight} class="background">
+        <canvas bind:this={canvas} width={canvasWidth} height={canvasHeight} id="gradient" />
+    </div>
+    <div class="blur" data-paused={animationPause} />
 
     <section class="content">
         <section class="left">
             <section class="info">
                 <div class="img-box">
                     <img src={artworkUrl} alt={songName} class="img" />
+                    <!-- <canvas bind:this={canvas} width={canvasWidth} height={canvasHeight} id="gradient" class="img" /> -->
                 </div>
                 <section class="info-detail">
                     <h1 class="subtitle1 title">{songName}</h1>
@@ -139,7 +222,7 @@
         height: 100%;
         object-fit: fill;
         object-position: center;
-        filter: blur(20px);
+        /* filter: blur(20px); */
     }
 
     .blur {
@@ -147,8 +230,35 @@
         width: 100%;
         height: 100%;
 
-        backdrop-filter: blur(100px);
         background-color: rgba(0, 0, 0, 0.5);
+
+        animation: blur-transition 10s linear infinite;
+        animation-play-state: paused;
+
+        will-change: backdrop-filter;
+    }
+
+    .blur[data-paused="false"] {
+        animation-play-state: running;
+        animation-direction: alternate;
+    }
+
+    @keyframes blur-transition {
+        0% {
+            backdrop-filter: blur(0px);
+        }
+
+        55% {
+            backdrop-filter: blur(15px);
+        }
+
+        80% {
+            backdrop-filter: blur(30px);
+        }
+
+        100% {
+            backdrop-filter: blur(50px);
+        }
     }
 
     .content {
