@@ -7,10 +7,8 @@
     import { AMPMusicKit } from "$lib/musickit/AMPMusicKit"
     import { trad2simp } from "$lib/trad2simp"
     import { onDestroy, onMount } from "svelte"
-    import { Gradient } from "./fluid/Gradient"
     import type { RGB } from "./extractColor"
-    import { loadQQLyrics } from "$lib/components/lyrics/loadQQLyrics"
-    import QQMusicLyrics from "$lib/components/lyrics/QQMusicLyrics.svelte"
+    import { Gradient } from "./fluid/Gradient"
 
     export let openFullScreen: boolean
     export let song: Songs
@@ -214,8 +212,6 @@
 
             {#if lyrics?.from == "apple"}
                 <TTMLLyrics song={playingItem} lyrics={lyrics.lyrics} />
-            {:else if lyrics?.from == "qq"}
-                <QQMusicLyrics song={playingItem} lyrics={lyrics.lyrics} />
             {/if}
         </section>
     </section>
