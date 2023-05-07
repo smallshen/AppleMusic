@@ -33,12 +33,6 @@
     color-scheme: dark;
 }
 
-body {
-    background-color: var(--gray1);
-    color: var(--gray12);
-    fill: var(--gray12);
-}
-
 ::-webkit-scrollbar {
     display: none;
 }

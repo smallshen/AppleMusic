@@ -9,8 +9,6 @@
 
     $: albumList = albums.data
 
-    $: console.log(albums)
-
     const music = MusicKit.getInstance()
 
     function onClick(album: any) {

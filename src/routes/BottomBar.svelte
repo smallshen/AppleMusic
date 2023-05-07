@@ -77,9 +77,9 @@
 
     .bar {
         height: 100%;
-        backdrop-filter: blur(20px);
+        backdrop-filter: blur(25px);
 
-        background-color: hsla(0, 0%, 78%, 0.8);
+        background-color: hsla(0, 0%, 78%, 0.5);
 
         display: flex;
         align-items: center;

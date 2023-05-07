@@ -3,12 +3,14 @@
 <script lang="ts">
     import PlayPauseButton from "$lib/components/controls/PlayPauseButton.svelte"
     import TTMLLyrics from "$lib/components/lyrics/TTMLLyrics.svelte"
-    import type { PlayParameters, Songs } from "$lib/musickit"
+    import type { MediaItem, PlayParameters, Songs } from "$lib/musickit"
     import { AMPMusicKit } from "$lib/musickit/AMPMusicKit"
     import { trad2simp } from "$lib/trad2simp"
     import { onDestroy, onMount } from "svelte"
     import { Gradient } from "./fluid/Gradient"
     import type { RGB } from "./extractColor"
+    import { loadQQLyrics } from "$lib/components/lyrics/loadQQLyrics"
+    import QQMusicLyrics from "$lib/components/lyrics/QQMusicLyrics.svelte"
 
     export let openFullScreen: boolean
     export let song: Songs
@@ -43,32 +45,56 @@
 
     let lyrics: LyricsInfo | null | undefined = undefined
 
-    $: {
+    async function updateLyrics(song: Songs) {
         if (song.attributes!.hasLyrics) {
-            AMPMusicKit.music(`/v1/catalog/{{storefrontId}}/songs/${song.id}/lyrics`).then((res) => {
-                const { data } = res.data as {
-                    data: Catlog[]
-                }
+            const res = await AMPMusicKit.music(`/v1/catalog/{{storefrontId}}/songs/${song.id}/lyrics`)
 
-                lyrics = {
-                    from: "apple",
-                    lyrics: trad2simp(data[0].attributes.ttml)
-                }
-            })
-        } else {
-            lyrics = null
+            const { data } = res.data as {
+                data: Catlog[]
+            }
+
+            return {
+                from: "apple",
+                lyrics: trad2simp(data[0].attributes.ttml)
+            }
         }
+
+        //  const qqLyrics = await loadQQLyrics(song.attributes!.artistName, song.attributes!.name)
+
+        //     return {
+        //         from: "qq",
+        //         lyrics: qqLyrics
+        //     }
+
+        return null
+    }
+
+    $: {
+        updateLyrics(song)
+            .then((lyrics) => {
+                lyrics = lyrics
+            })
+            .catch((e) => {
+                console.error(e)
+                lyrics = null
+            })
     }
 
     const music = MusicKit.getInstance()
 
     let paused = music.playbackState !== MusicKit.PlaybackStates.playing
     let animationPause = false
+    let playingItem: MediaItem<Songs.Attributes> = music.nowPlayingItem
 
     onMount(() => {
         const music = MusicKit.getInstance()
-        const callback = (e: { oldState: MusicKit.PlaybackStates; state: MusicKit.PlaybackStates }) => {
+        const callback = (e: {
+            oldState: MusicKit.PlaybackStates
+            state: MusicKit.PlaybackStates
+            item: MediaItem<Songs.Attributes>
+        }) => {
             const { state } = e
+            playingItem = e.item
             paused = state !== MusicKit.PlaybackStates.playing
             animationPause = state === MusicKit.PlaybackStates.paused
         }
@@ -91,7 +117,6 @@
     })
 
     $: rgbs = orderByLuminance(song.__rgbs)
-    $: console.log(rgbs)
 
     $: fixedColors = [rgbs[0], rgbs[3], rgbs[10], rgbs[14]]
 
@@ -156,7 +181,7 @@
 
 <svelte:window on:keydown={handleWindowKeyDown} />
 
-<main class={paused ? "paused" : ""}>
+<main class="{paused ? 'paused' : ''} dark-theme">
     <!-- <canvas id="gradient" class="background" /> -->
     <!-- <img src={artworkUrl} alt={songName} class="background" /> -->
     <div bind:clientWidth={canvasWidth} bind:clientHeight={canvasHeight} class="background">
@@ -188,7 +213,9 @@
             {/if}
 
             {#if lyrics?.from == "apple"}
-                <TTMLLyrics lyrics={lyrics.lyrics} />
+                <TTMLLyrics song={playingItem} lyrics={lyrics.lyrics} />
+            {:else if lyrics?.from == "qq"}
+                <QQMusicLyrics song={playingItem} lyrics={lyrics.lyrics} />
             {/if}
         </section>
     </section>
@@ -199,6 +226,7 @@
         overflow: scroll;
         /* oneline */
         white-space: nowrap;
+        color: var(--gray12);
     }
 
     .info {
@@ -284,12 +312,13 @@
     }
 
     .img {
-        width: 100%;
-        height: 100%;
+        height: clamp(100px, 25vw, 400px);
 
         border-radius: 12px;
         border: 1px solid var(--grayA7);
         box-shadow: 4px 8px 19px -3px rgba(0, 0, 0, 0.27);
+
+        object-fit: cover;
 
         align-self: center;
 
@@ -322,11 +351,18 @@
         flex: 1;
     }
 
+    .lyrics > * {
+        color: var(--gray12);
+    }
+
     .player {
         width: 100%;
         display: flex;
         flex-direction: row;
         justify-content: center;
         align-items: center;
+    }
+
+    :global(.paused) {
     }
 </style>

@@ -95,7 +95,6 @@ export default class PlaneGeometry {
         this.width = width
         this.height = height
         this.orientation = orientation
-
         ;(this.attributes.position.values && this.attributes.position.values.length === 3 * this.vertexCount) ||
             (this.attributes.position.values = new Float32Array(3 * this.vertexCount))
         const o = width / -2

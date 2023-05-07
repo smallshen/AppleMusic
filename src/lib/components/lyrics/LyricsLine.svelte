@@ -25,6 +25,6 @@
 
     :global(.scroll-override) div {
         filter: blur(0px) !important;
-        transition: filter 0.2s, color 0.2s !important;
+        transition: filter 0.8s, color 0.5s !important;
     }
 </style>

@@ -38,9 +38,13 @@
 </script>
 
 <script lang="ts">
+    import type { MediaItem } from "$lib/musickit"
     import { XMLParser } from "fast-xml-parser"
     import { onMount } from "svelte"
     import LyricsLine from "./LyricsLine.svelte"
+
+    export let song: MediaItem<Songs.Attributes>
+
     export let lyrics: string
 
     $: ttml = new XMLParser({
@@ -50,9 +54,30 @@
         textNodeName: "text"
     }).parse(lyrics).tt as TT
 
-    $: totalMilliseconds = hmsToMilliseconds(ttml.body.attributes.dur)
-
     const music = MusicKit.getInstance()
+
+    $: lyricsArray = [] as {
+        dom: HTMLElement
+    }[]
+
+    $: {
+        const array = [] as {
+            dom: HTMLElement
+        }[]
+        for (const div of ttml.body.div) {
+            if (!div.p) continue
+
+            for (const p of div.p) {
+                const start = ceilToThree(hmsToMilliseconds(p.attributes.begin))
+                const end = roundToThree(hmsToMilliseconds(p.attributes.end))
+                // loop throught start to end
+                for (let i = start; i < end; i += 1) {
+                    array[i] = p
+                }
+            }
+        }
+        lyricsArray = array
+    }
 
     let currentLine: HTMLElement | null
 
@@ -71,7 +96,9 @@
         const music = MusicKit.getInstance()
 
         const porgressCallback = (event: any) => {
-            const newLine = findLine(music.currentPlaybackProgress)
+            const { progress } = event
+
+            const newLine = findLine(progress)
 
             if (newLine && newLine != currentLine) {
                 currentLine?.classList.remove("lyrics_line_current")
@@ -80,10 +107,10 @@
             }
         }
 
-        music.addEventListener("playbackTimeDidChange", porgressCallback)
+        music.addEventListener("playbackProgressDidChange", porgressCallback)
 
         return () => {
-            music.removeEventListener("playbackTimeDidChange", porgressCallback)
+            music.removeEventListener("playbackProgressDidChange", porgressCallback)
         }
     })
 
@@ -101,16 +128,21 @@
         return Math.round(num * 1000) / 1000
     }
 
+    function ceilToThree(num: number) {
+        return Math.ceil(num * 1000) / 1000
+    }
+
     // progress in 0 to 1
     function findLine(progress: number) {
-        for (const div of ttml.body.div) {
-            for (const p of div.p) {
-                const beginProgress = roundToThree(hmsToMilliseconds(p.attributes.begin) / totalMilliseconds)
-                const endProgress = roundToThree(hmsToMilliseconds(p.attributes.end) / totalMilliseconds)
+        const totalSeconds = music.currentPlaybackDuration
+        const totalMilliseconds = totalSeconds * 1000
+        const currentMilliseconds = progress * totalMilliseconds
 
-                if (progress >= beginProgress && progress <= endProgress) {
-                    return p.dom
-                }
+        // from currentMilliseconds to 0
+        for (let i = currentMilliseconds; i >= 0; i -= 1) {
+            const line = lyricsArray[i]
+            if (line) {
+                return line.dom
             }
         }
 
