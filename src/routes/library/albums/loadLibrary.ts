@@ -1,6 +1,6 @@
 import type { Artwork } from "$lib/musickit/Artwork"
 
-const pageSize = 26
+const pageSize = 20
 
 export async function loadLibrary(page: number = 1) {
     if (page < 1) {
