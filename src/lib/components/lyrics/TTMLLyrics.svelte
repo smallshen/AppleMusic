@@ -1,24 +1,19 @@
 <svelte:options immutable={true} />
 
 <script context="module" lang="ts">
-    // 1:21.822
-    function hmsToSecondsOnly(str: string): number {
-        let p = str.split(":")
-        let s = 0
-        let m = 1
-
-        while (p.length > 0) {
-            s += m * parseInt(p.pop()!, 10)
-            m *= 60
+    // example format: 16.400 (16 seconds and 400 milliseconds)
+    // example format: 1:16.400 (1 minute, 16 seconds and 400 milliseconds)
+    function convertStringToMilliseconds(time: string) {
+        if (time.indexOf(":") === -1) {
+            // no minutes. example: 16.400
+            const [seconds, milliseconds] = time.split(".")
+            return parseInt(seconds) * 1000 + parseInt(milliseconds)
+        } else {
+            // has minutes. example: 1:16.400
+            const [minutes, remain] = time.split(":")
+            const [seconds, milliseconds] = remain.split(".")
+            return parseInt(minutes) * 60 * 1000 + parseInt(seconds) * 1000 + parseInt(milliseconds)
         }
-
-        return s
-    }
-
-    // 1:21.822
-    function hmsToMilliseconds(str: string): number {
-        const [seconds, milliseconds] = str.split(".")
-        return hmsToSecondsOnly(seconds) * 1000 + parseInt(milliseconds, 10)
     }
 
     type TT = {
@@ -68,8 +63,9 @@
             if (!div.p) continue
 
             for (const p of div.p) {
-                const start = ceilToThree(hmsToMilliseconds(p.attributes.begin))
-                const end = roundToThree(hmsToMilliseconds(p.attributes.end))
+                const start = Math.round(convertStringToMilliseconds(p.attributes.begin) / 100) * 100
+                const end = Math.ceil(convertStringToMilliseconds(p.attributes.end) / 100) * 100
+
                 // loop throught start to end
                 for (let i = start; i < end; i += 1) {
                     array[i] = p
@@ -96,8 +92,7 @@
         const music = MusicKit.getInstance()
 
         const porgressCallback = (event: any) => {
-            const { progress } = event
-
+            const progress = music.currentPlaybackProgress
             const newLine = findLine(progress)
 
             if (newLine && newLine != currentLine) {
@@ -107,10 +102,10 @@
             }
         }
 
-        music.addEventListener("playbackProgressDidChange", porgressCallback)
+        music.addEventListener("playbackTimeDidChange", porgressCallback)
 
         return () => {
-            music.removeEventListener("playbackProgressDidChange", porgressCallback)
+            music.removeEventListener("playbackTimeDidChange", porgressCallback)
         }
     })
 
@@ -135,11 +130,10 @@
     // progress in 0 to 1
     function findLine(progress: number) {
         const totalSeconds = music.currentPlaybackDuration
-        const totalMilliseconds = totalSeconds * 1000
-        const currentMilliseconds = progress * totalMilliseconds
 
-        // from currentMilliseconds to 0
-        for (let i = currentMilliseconds; i >= 0; i -= 1) {
+        const currentMark = Math.round(progress * totalSeconds * 1000)
+
+        for (let i = currentMark; i >= 0; i -= 1) {
             const line = lyricsArray[i]
             if (line) {
                 return line.dom
@@ -196,7 +190,8 @@
                     {#each div.p as p}
                         <li bind:this={p.dom} class="lyrics-line">
                             <LyricsLine
-                                duration={hmsToMilliseconds(p.attributes.end) - hmsToMilliseconds(p.attributes.begin)}
+                                duration={convertStringToMilliseconds(p.attributes.end) -
+                                    convertStringToMilliseconds(p.attributes.begin)}
                                 text={p.text}
                             />
                         </li>

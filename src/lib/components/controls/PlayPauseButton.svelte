@@ -20,7 +20,13 @@
     onMount(() => {
         const callback = (e: { oldState: MusicKit.PlaybackStates; state: MusicKit.PlaybackStates }) => {
             state = e.state
-            paused = state !== MusicKit.PlaybackStates.playing
+            console.log(state)
+
+            // not playing and not seeking and not waiting
+            paused =
+                state !== MusicKit.PlaybackStates.playing &&
+                state !== MusicKit.PlaybackStates.seeking &&
+                state !== MusicKit.PlaybackStates.waiting
         }
 
         music.addEventListener("playbackStateDidChange", callback)

@@ -9,6 +9,7 @@
     import { onDestroy, onMount } from "svelte"
     import type { RGB } from "./extractColor"
     import { Gradient } from "./fluid/Gradient"
+    import ProgressController from "./ProgressController.svelte"
 
     export let openFullScreen: boolean
     export let song: Songs
@@ -43,7 +44,7 @@
 
     let lyrics: LyricsInfo | null | undefined = undefined
 
-    async function updateLyrics(song: Songs) {
+    async function updateLyrics(song: Songs): Promise<LyricsInfo | null> {
         if (song.attributes!.hasLyrics) {
             const res = await AMPMusicKit.music(`/v1/catalog/{{storefrontId}}/songs/${song.id}/lyrics`)
 
@@ -69,14 +70,16 @@
 
     $: {
         updateLyrics(song)
-            .then((lyrics) => {
-                lyrics = lyrics
+            .then((l) => {
+                lyrics = l
             })
             .catch((e) => {
                 console.error(e)
                 lyrics = null
             })
     }
+
+    $: console.log(lyrics)
 
     const music = MusicKit.getInstance()
 
@@ -116,7 +119,7 @@
 
     $: rgbs = orderByLuminance(song.__rgbs)
 
-    $: fixedColors = [rgbs[0], rgbs[3], rgbs[10], rgbs[14]]
+    $: fixedColors = [rgbs[0], rgbs[3], rgbs[7], rgbs[14]]
 
     $: colors = fixedColors.map((rgb) => rgbToHex(rgb))
 
@@ -195,12 +198,15 @@
                     <!-- <canvas bind:this={canvas} width={canvasWidth} height={canvasHeight} id="gradient" class="img" /> -->
                 </div>
                 <section class="info-detail">
-                    <h1 class="subtitle1 title">{songName}</h1>
-                    <h2 class="subtitle3 cap">{author}</h2>
+                    <h1 class="subtitle3 title">{songName}</h1>
+                    <h2 class="body1 cap">{author}</h2>
                 </section>
             </section>
 
             <section class="player">
+                {#key playingItem}
+                    <ProgressController />
+                {/key}
                 <PlayPauseButton />
             </section>
         </section>
@@ -257,14 +263,14 @@
         background-color: rgba(0, 0, 0, 0.5);
 
         animation: blur-transition 10s linear infinite;
-        animation-play-state: paused;
+        animation-play-state: running;
+        animation-direction: alternate;
 
         will-change: backdrop-filter;
     }
 
-    .blur[data-paused="false"] {
-        animation-play-state: running;
-        animation-direction: alternate;
+    .blur[data-paused="true"] {
+        animation-play-state: paused;
     }
 
     @keyframes blur-transition {
@@ -354,7 +360,7 @@
     .player {
         width: 100%;
         display: flex;
-        flex-direction: row;
+        flex-direction: column;
         justify-content: center;
         align-items: center;
     }

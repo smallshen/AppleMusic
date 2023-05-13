@@ -64,7 +64,7 @@ declare global {
             playLater(options: MusicKit.QueueOptions): Promise<MusicKit.Queue | void>
             playNext(options: MusicKit.QueueOptions, clear?: boolean): Promise<MusicKit.Queue | void>
             removeEventListener(name: string, callback: Function): void
-            seekToTime(time: number): void
+            seekToTime(time: number): Promise<void>
             setQueue(descriptor: MusicKit.QueueOptions): Promise<MusicKit.Queue>
             skipBackward(): void
             skipForward(): void
