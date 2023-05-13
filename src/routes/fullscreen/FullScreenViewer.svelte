@@ -205,17 +205,12 @@
 
             <section class="player">
                 {#key playingItem}
-                    <ProgressController />
+                    <ProgressController song={playingItem} />
                 {/key}
                 <PlayPauseButton />
             </section>
         </section>
-        <section class="lyrics">
-            {#if lyrics === null}
-                <h1 class="subtitle1">Lyrics</h1>
-                <h2 class="body2">Coming soon...</h2>
-            {/if}
-
+        <section class="lyrics" data-hasLyrics={lyrics !== null}>
             {#if lyrics?.from == "apple"}
                 <TTMLLyrics song={playingItem} lyrics={lyrics.lyrics} />
             {/if}
@@ -351,10 +346,16 @@
 
     .lyrics {
         flex: 1;
+
+        transition: flex 0.3s cubic-bezier(0.175, 0.885, 0.32, 1);
     }
 
     .lyrics > * {
         color: var(--gray12);
+    }
+
+    .lyrics[data-hasLyrics="false"] {
+        flex: unset;
     }
 
     .player {

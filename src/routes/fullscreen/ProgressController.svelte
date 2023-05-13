@@ -1,11 +1,23 @@
-<script lang="ts">
-    import { onMount } from "svelte"
+<svelte:options immutable={true} />
 
-    let progress: number = 0
+<script lang="ts">
+    import type { MediaItem } from "$lib/musickit/MediaItem"
+    import { onMount } from "svelte"
 
     const music = MusicKit.getInstance()
 
-    const duration = music.currentPlaybackDuration
+    export let song: MediaItem<Songs.Attributes>
+
+    let progress: number = music.currentPlaybackProgress * music.currentPlaybackDuration
+
+    let duration = music.currentPlaybackDuration
+
+    $: {
+        console.log(song)
+
+        progress = music.currentPlaybackProgress * music.currentPlaybackDuration
+        duration = music.currentPlaybackDuration
+    }
 
     async function updateProgress(e: any) {
         const newProgress: number = e.target.value
@@ -14,6 +26,7 @@
 
     onMount(() => {
         const callback = (e: { progress: number }) => {
+            duration = music.currentPlaybackDuration
             progress = e.progress * duration
         }
 

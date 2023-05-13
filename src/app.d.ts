@@ -1,5 +1,10 @@
 // See https://kit.svelte.dev/docs/types#app
 // for information about these interfaces
+
+declare module "https://js-cdn.music.apple.com/musickit/v3/musickit.js" {
+    export const LitElement: any, html: any
+}
+
 declare global {
     namespace App {
         // interface Error {}

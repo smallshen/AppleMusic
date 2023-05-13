@@ -102,6 +102,13 @@
             }
         }
 
+        const firstNonEmptyLine = lyricsArray.find((line) => line)
+        firstNonEmptyLine?.dom?.scrollIntoView({
+            behavior: "smooth",
+            block: "center",
+            inline: "center"
+        })
+
         music.addEventListener("playbackTimeDidChange", porgressCallback)
 
         return () => {

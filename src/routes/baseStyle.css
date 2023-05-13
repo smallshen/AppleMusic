@@ -33,6 +33,11 @@
     color-scheme: dark;
 }
 
+html,
+body {
+    background: var(--gray1);
+}
+
 ::-webkit-scrollbar {
     display: none;
 }

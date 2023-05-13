@@ -1,5 +1,7 @@
 import getDeveloperToken from "$lib/getDeveloperToken"
 
+await import("https://js-cdn.music.apple.com/musickit/v3/musickit.js")
+
 console.log(MusicKit)
 
 const music = await MusicKit.configure({
