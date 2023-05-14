@@ -36,15 +36,12 @@ export async function loadLibraryAlbum(id: string) {
     })
     const data = albums.data as LibraryAlbumsData
 
-    console.log(data)
-
     if (id !== data.data[0].id) {
         throw new Error("id mismatch")
     }
 
     const libraryAlbum = data.resources["library-albums"][id]
     const album = data.resources.albums[libraryAlbum.relationships.catalog.data[0].id]
-    const artist = data.resources["library-artists"][libraryAlbum.relationships.artists.data[0].id]
 
     const songs = Object.values(data.resources["library-songs"]).map((librarySong) => {
         const song = data.resources.songs[librarySong.relationships.catalog.data[0].id]
@@ -69,10 +66,10 @@ export async function loadLibraryAlbum(id: string) {
     const totalDurationInMinutes = Math.floor(songs.reduce((prev, curr) => prev + curr.duration, 0) / 1000 / 60)
 
     return {
-        name: libraryAlbum.attributes.name,
-        artist: artist.attributes.name,
+        name: album.attributes.name,
+        artist: album.attributes.artistName,
         genre: album.attributes.genreNames[0],
-        repeaseYear: libraryAlbum.attributes.releaseDate.slice(0, 4),
+        repeaseYear: album.attributes.releaseDate.slice(0, 4),
         releaseDate: album.attributes.releaseDate,
         copyright: album.attributes.copyright,
         songs: songs,
@@ -102,6 +99,7 @@ export type LibraryAlbumsData = {
             {
                 attributes: {
                     name: string
+                    artistName: string
                     releaseDate: string
                     copyright: string
                     genreNames: string[]
