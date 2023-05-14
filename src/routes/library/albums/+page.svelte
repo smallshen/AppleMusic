@@ -51,9 +51,9 @@
         {#each albumList as album}
             {@const { artwork, title, subtitle } = albumInfo(album.id)}
 
-            <li>
-                <ArtworkCard on:click={() => onClick(album)} {artwork} {title} {subtitle} />
-            </li>
+            <a href="/library/albums/{album.id}">
+                <ArtworkCard {artwork} {title} {subtitle} />
+            </a>
         {/each}
 
         {#key albums.page}

@@ -141,8 +141,8 @@ declare global {
         }
 
         enum PlayerShuffleMode {
-            off = "off",
-            songs = "songs"
+            off = 0,
+            songs = 1
         }
     }
 }
