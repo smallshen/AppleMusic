@@ -238,5 +238,9 @@
             width: 270px;
             align-items: center;
         }
+
+        .info-text-top {
+            align-items: center;
+        }
     }
 </style>
