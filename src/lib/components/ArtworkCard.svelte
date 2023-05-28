@@ -64,7 +64,7 @@
     }
 
     /* if card is hover, transform the img inside card */
-    .card:is(:hover) > .img-holder {
+    .card:is(:hover, :focus) > .img-holder {
         transform: scale(1.03);
     }
 

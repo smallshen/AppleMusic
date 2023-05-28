@@ -79,8 +79,6 @@
             })
     }
 
-    $: console.log(lyrics)
-
     const music = MusicKit.getInstance()
 
     let paused = music.playbackState !== MusicKit.PlaybackStates.playing

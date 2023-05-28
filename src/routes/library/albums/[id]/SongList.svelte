@@ -2,6 +2,7 @@
     import type { AlbumInfo } from "./loadLibraryAlbum"
 
     export let albumInfo: AlbumInfo
+    export let showFullAlbum: boolean
 
     function formatMilliseconds(ms: number) {
         const seconds = Math.floor(ms / 1000)
@@ -23,14 +24,16 @@
 
 <ol>
     {#each albumInfo.songs as song}
-        <li class="body1">
-            <button on:click={() => playSong(song.id)}>
-                <p class="number body2">{song.trackNumber}</p>
-                <h1 class="name">{song.name}</h1>
-                <p class="duration">{formatMilliseconds(song.duration)}</p>
-            </button>
-        </li>
-        <div class="divider" />
+        {#if showFullAlbum || (!showFullAlbum && song.inLibrary)}
+            <li class="body1">
+                <button on:click={() => playSong(song.id)}>
+                    <p class="number body2">{song.trackNumber}</p>
+                    <h1 class="name">{song.name}</h1>
+                    <p class="duration">{formatMilliseconds(song.duration)}</p>
+                </button>
+            </li>
+            <div class="divider" />
+        {/if}
     {/each}
 </ol>
 
@@ -78,7 +81,7 @@
         transition: background-color 0.2s ease-in-out;
     }
 
-    button:hover {
+    button:is(:hover, :focus) {
         background-color: var(--gray4);
     }
 

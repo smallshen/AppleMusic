@@ -58,8 +58,6 @@
                 return
             }
 
-            console.log(e)
-
             const queryParameters = { l: "zh-CN" }
 
             const { data } = await music.api.music(

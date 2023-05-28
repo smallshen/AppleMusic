@@ -7,6 +7,8 @@
 
     const music = MusicKit.getInstance()
 
+    let showFullAlbum = $page.url.searchParams.get("showFullAlbum") === "true"
+
     $: artwork = data.albumInfo.artwork
     $: artworkURL = artwork.url.replace("{w}", artwork.width.toString()).replace("{h}", artwork.height.toString())
 
@@ -16,10 +18,18 @@
         day: "numeric"
     })
 
+    $: totalDuration = data.albumInfo.songs.reduce(
+        (acc, song) => (showFullAlbum || song.inLibrary ? acc + song.duration : acc),
+        0
+    )
+    $: totalDurationInMinutes = Math.floor(totalDuration / 1000 / 60)
+    $: songsCount = data.albumInfo.songs.length
+    $: inLibrarySongsCount = data.albumInfo.songs.filter((song) => song.inLibrary).length
+
     function playAlbum(shuffle = false) {
         music.shuffleMode = shuffle ? 1 : 0
         music.setQueue({
-            album: $page.params.id,
+            album: showFullAlbum ? data.albumInfo.albumId : data.albumInfo.libraryId,
             startPlaying: true
         })
     }
@@ -73,12 +83,17 @@
         </div>
     </div>
     <div class="songs">
-        <SongList albumInfo={data.albumInfo} />
+        <SongList albumInfo={data.albumInfo} {showFullAlbum} />
     </div>
     <div class="footer-info">
         <p class="body1">{localeDate}</p>
-        <p class="body1">{data.albumInfo.songs.length}首歌曲，{data.albumInfo.totalDurationInMinutes}分钟</p>
+        <p class="body1">{showFullAlbum ? songsCount : inLibrarySongsCount}首歌曲，{totalDurationInMinutes}分钟</p>
         <p class="body1">{data.albumInfo.copyright}</p>
+        {#if songsCount != inLibrarySongsCount}
+            <button class="full-album-toggle" on:click={() => (showFullAlbum = !showFullAlbum)}>
+                <p class="body1">{showFullAlbum ? "只显示资料库内歌曲" : "显示完整专辑"}</p>
+            </button>
+        {/if}
     </div>
 </main>
 
@@ -196,6 +211,7 @@
 
     .play-btn {
         border: unset;
+        outline: unset;
         display: flex;
         flex-direction: row;
         align-items: center;
@@ -213,7 +229,7 @@
         transition: background-color 0.2s ease-in-out;
     }
 
-    .play-btn:hover {
+    .play-btn:is(:hover, :focus) {
         background-color: var(--gray4);
     }
 
@@ -242,5 +258,13 @@
         .info-text-top {
             align-items: center;
         }
+    }
+
+    .full-album-toggle {
+        all: unset;
+        margin-top: 0.4rem;
+        margin-bottom: 0.4rem;
+        cursor: pointer;
+        color: rgb(var(--theme-color));
     }
 </style>

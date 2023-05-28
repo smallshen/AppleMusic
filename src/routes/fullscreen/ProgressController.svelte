@@ -13,8 +13,6 @@
     let duration = music.currentPlaybackDuration
 
     $: {
-        console.log(song)
-
         progress = music.currentPlaybackProgress * music.currentPlaybackDuration
         duration = music.currentPlaybackDuration
     }

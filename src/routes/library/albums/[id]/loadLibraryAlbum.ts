@@ -1,6 +1,8 @@
 import type { Artwork } from "$lib/musickit/Artwork"
 
 export type AlbumInfo = {
+    libraryId: string
+    albumId: string
     name: string
     artist: string
     genre: string
@@ -8,19 +10,17 @@ export type AlbumInfo = {
     releaseDate: string
     copyright: string
     artwork: Artwork
-    totalDurationInMinutes: number
     songs: Array<{
         id: string
         name: string
         artist: string
         duration: number
         trackNumber: number
+        inLibrary: boolean
     }>
 }
 
 export async function loadLibraryAlbum(id: string) {
-    console.log(id)
-
     const music = MusicKit.getInstance()
 
     const albums = await music.api.music(`/v1/me/library/albums/${id}`, {
@@ -43,29 +43,34 @@ export async function loadLibraryAlbum(id: string) {
     const libraryAlbum = data.resources["library-albums"][id]
     const album = data.resources.albums[libraryAlbum.relationships.catalog.data[0].id]
 
-    const songs = Object.values(data.resources["library-songs"]).map((librarySong) => {
-        const song = data.resources.songs[librarySong.relationships.catalog.data[0].id]
+    Object.values(data.resources["library-songs"]).forEach((libSong) => {
+        const catalog = libSong.relationships.catalog.data[0].id
+        data.resources.songs[catalog].inLibrary = true
+    })
+
+    const songs = Object.values(data.resources.songs).map((song) => {
         const id = song.id
         const artist = song.attributes.artistName
         const name = song.attributes.name
         const duration = song.attributes.durationInMillis
         const trackNumber = song.attributes.trackNumber
+        const inLibrary = song.inLibrary!
+
+        delete song.inLibrary
 
         return {
             id,
             artist,
             name,
             duration,
-            trackNumber
+            trackNumber,
+            inLibrary
         }
     })
 
-    // sort by track number
-    songs.sort((a, b) => a.trackNumber - b.trackNumber)
-
-    const totalDurationInMinutes = Math.floor(songs.reduce((prev, curr) => prev + curr.duration, 0) / 1000 / 60)
-
     return {
+        libraryId: data.data[0].id,
+        albumId: libraryAlbum.relationships.catalog.data[0].id,
         name: album.attributes.name,
         artist: album.attributes.artistName,
         genre: album.attributes.genreNames[0],
@@ -73,8 +78,7 @@ export async function loadLibraryAlbum(id: string) {
         releaseDate: album.attributes.releaseDate,
         copyright: album.attributes.copyright,
         songs: songs,
-        artwork: libraryAlbum.attributes.artwork,
-        totalDurationInMinutes: totalDurationInMinutes
+        artwork: libraryAlbum.attributes.artwork
     } satisfies AlbumInfo
 }
 
@@ -181,6 +185,7 @@ export type LibraryAlbumsData = {
                     artistName: string
                     trackNumber: number
                 }
+                inLibrary?: boolean
             }
         >
     }
